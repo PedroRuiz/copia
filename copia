@@ -1,0 +1,337 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ Author: 	Pedro Ruiz Hidalgo
+ 			@pedroruizhidalg
+			License MIT
+
+
+#
+ VERSION 1.0
+ CHANGE LOG 
+ *****************************
+ 1.0   - 2017/11/18 - Initial issue
+ 
+#
+
+*/
+class Backup
+{
+	private $base			=	'/home/pedro/';
+	private $target			=	'/media/pedro/Archivos/';
+	private $folder			=	'cseg1.1/';
+	private $fullprefix		=	'fullbackup_';
+	private $inc_prefix		=	'inc_backup_';
+	private $snap_file		=	'backup.snap';
+	private $err_log		=	'err.log';
+
+	public $command;
+
+	function get($private_var)
+	// only read
+	{
+		switch ($private_var) {
+			case 'base':
+				return $this->base;
+				break;
+			case 'target':
+				return $this->target;
+				break;
+			case 'folder':
+				return $this->folder;
+				break;
+			case 'fullprefix':
+				return $this->fullprefix;
+				break;
+			case 'inc_prefix':
+				return $this->inc_prefix;
+				break;
+			case 'snap_prefix':
+				return $this->target.$this->folder.$this->snap_prefix;
+			case 'err_log':
+				return $this->target.$this->folder.$this->err_log;
+				break;
+			case 'inc_search_prefix':
+				return $this->inc_prefix.'*';
+				break;
+			default:
+				return NULL;
+				break;
+		}
+	}
+
+	function title()
+	{
+		exec("clear");
+		echo "
+   ____                   _         
+  / ___|   ___    _ __   (_)   __ _ 
+ | |      / _ \  | '_ \  | |  / _` |
+ | |___  | (_) | | |_) | | | | (_| |
+  \____|  \___/  | .__/  |_|  \__,_|
+                 |_|                
+";
+  echo $this->command[0];
+	}
+
+	function help()
+	{
+		$BASE	=	$this->base;
+		$TARGET	=	$this->target;
+		$FOLDER	=	$this->folder;
+		$ERRLOG = 	$this->err_log;
+		echo "copia environment para comprobar directorios";
+		echo "\ncopia full crea fullbackup de $BASE en $TARGET$FOLDER";
+		echo "\ncopia incremental para backup incremental";
+		echo "\ncopia restore para restaurar todo";
+		echo "\ncopia history para ver cabeceras en $ERRLOG";
+		echo "\ncopia help para ver esta ayuda";
+		echo "\n";
+	}
+
+	function author()
+	{
+		$year=date('Y');
+		$copyright= ($year == 2017) ? '2017' : "2017-$year";
+		$banner="* Pedro Ruiz Hidalgo (c) $copyright";
+		$len_banner=strlen($banner);
+		echo "\n".str_repeat('*', 36);
+		echo "\n".$banner.str_repeat(' ', 35-$len_banner).'*';
+		echo "\n".str_repeat('*', 36)."\n";
+	}
+
+	function set_command($command)
+	{
+		$this->command=$command;
+	}
+
+	function get_command()
+	{
+		return $this->command;
+	}
+
+	function base()
+	{
+		return is_dir($this->base) ? TRUE : FALSE;
+	}
+
+	function target()
+	{
+		return is_dir($this->target) ? TRUE : FALSE;
+	}
+
+	function folder()
+	{
+		return is_dir($this->target.$this->folder) ? TRUE : FALSE;
+	}
+
+	function create_folder()
+	{
+		return (mkdir($this->target.$this->folder,0700)) ? TRUE : FALSE;
+	}
+
+	function is_snap_file()
+	{
+		return (file_exists($this->target.$this->folder.$this->snap_file)) ? TRUE : FALSE;
+	}
+
+	function is_full_file()
+	{
+		$TARGET 	=	$this->target.$this->folder;
+		$FULL 		=	$this->fullprefix.'*';
+		exec ("find $TARGET -iname $FULL",$output,$retval);
+		return empty($output) ? FALSE : TRUE;
+	}
+
+	function full()
+	{
+		$date=date('YmdHis');
+		$full_name=$this->target.$this->folder.$this->fullprefix."$date.tgz";
+		$snap_file=$this->target.$this->folder.$this->snap_file;
+		$base=$this->base;
+		$err_log=$this->target.$this->folder.$this->err_log;
+		
+		if ($this->base)
+		{
+			if ($this->target)
+			{
+				if ($this->folder)
+				{
+					if(  ! $this->is_full_file())
+					{
+						$this->to_errlog('Copia Full');
+						exec ("tar -cpvzf $full_name -g $snap_file $base 1> /dev/null 2>>$err_log",$output,$retval);
+						$this->to_errlog('Termina full');
+					} else {					
+						exit( "ya existe un archivo fullbackup\n");
+					}
+				} else {				
+					exit( $this->folder." no existe\n");
+				}
+			} else {			
+				exit( $this->target." no existe\n");
+			}
+		} else {			
+			exit( "$base no existe\n");
+		}
+	}
+
+	function incremental()
+	{
+		$date=date('YmdHis');
+		$inc_name=$this->target.$this->folder.$this->inc_prefix."$date.tgz";
+		$snap_file=$this->target.$this->folder.$this->snap_file;
+		$base=$this->base;
+		$err_log=$this->target.$this->folder.$this->err_log;
+
+		if($this->base)
+		{
+			if($this->target)
+			{
+				if($this->folder)
+				{
+					if ($this->is_full_file())
+					{
+						echo "Creando Incremental ".date('d-m-Y H:i:s');
+						$this->to_errlog('Incremental');
+						exec ("tar -cpvzf $inc_name -g $snap_file $base 1> /dev/null 2>>$err_log",$output,$retval);
+						$this->to_errlog('Termina Incremental');
+						echo "\nTermina Incremental ".date('d-m-Y H:i:s')."\n";
+
+					} else {
+						exit("No existe fullfile\n");
+					}
+				} else {
+					exit("Folder no definido\n");
+				}
+			} else {
+				exit("Target no existe\n");
+			}
+		} else {	
+			exit("Base no definida\n");
+		}
+	}
+
+	function environment()
+	{
+		if ( is_dir($this->base) ) 
+		{
+			echo "\n".$this->base." preparado para surtir datos.\n";
+		} 
+		$this->to_errlog('Environment');
+		if (is_dir($this->target.$this->folder))
+		{
+			echo $this->target.$this->folder." listo para recibir datos\n";
+		} else {
+			mkdir($this->target.$this->folder);
+			echo 'ha sido creado '. $this->target.$this->folder."\n";
+		}
+		$this->to_errlog('environment');
+	}
+
+	function to_errlog($var)
+	{
+		$now	= date('d/m/Y H:i:s');
+		$totail	= sprintf(">>> %-25s <<< %s (php)",$var,$now);
+		exec ( "echo '$totail' >> ".$this->target.$this->folder.$this->err_log ); 
+	}
+
+	function restore()
+	{
+		$target 	= $this->target;
+		$folder 	= $this->folder;
+		$fullprefix	= $this->fullprefix;
+		$inc_prefix = $this->inc_prefix;
+
+		exec ("find $target$folder -iname '$fullprefix*' | sort",$output);
+
+
+		if (count($output)==1)
+		{
+			$full=$output[0];
+			echo  "\nRestaurando $full. \nEste proceso es lento\n";
+			echo  "Iniciado a las ".date('d-m-Y H:i:s')."\n";
+			$this->to_errlog('Restaurando full');
+			exec("\n\n\ntar -xzf $full -C ".$this->base." 1> /dev/null 2>> ".$this->target.$this->folder.$this->err_log);
+			$this->to_errlog('Fin restaurar full');
+			unset($output);
+
+			exec ("find  $target$folder -iname $inc_prefix* | sort",$output);
+
+			if(count($output)>0)
+			{
+				$this->to_errlog('Restore incremental');
+				$count_incrementals 	=	count($output);
+				echo "$count_incrementals archivos incrementales a Restaurar\n";
+				for ($i=0;$i<=count($output)-1;$i++)
+				{
+					echo "Restaurando de $output[$i] ".($i+1)."/$count_incrementals\n";
+					exec("tar --incremental -zxf $output[$i]");
+				}
+				echo "Restauración completa\n";
+				$this->to_errlog('Fin restaurar incremental');
+			} else {
+				exit("Ninun archivo incremental a restaurar\n");
+			}
+		} else {
+			exit("error: más de un archivo full no está permitido");
+		}
+	}
+
+	function dispatch($command)
+	{
+		switch ($command) {
+			case 'full':
+				$this->full();
+				break;
+
+			case 'history';
+				$this->to_errlog('history');
+				exec ('echo \'>>> history <<<\''.date('%h'));
+				exec ("grep '>>>' " . $this->target.$this->folder.$this->err_log,$output,$retval);
+				echo "History:\n";
+				
+				for ($i=0;$i<=count($output)-1;$i++)
+				{
+					echo sprintf('%6s %s',$i,$output[$i])."\n";
+				}
+				break;
+
+			case 'incremental':
+			case 'inc':
+				$this->incremental();
+				break;
+			
+			case 'environment':
+			case 'env':
+				$this->environment();
+				break;
+			case 'restore':
+				$this->restore();
+				break;
+			
+			case 'help':
+			case 'h':
+			case '-h':
+			case '--help':
+			default:
+				$this->title();
+				$this->author();
+				echo "\n";
+				$this->help();
+				echo "\n";
+				break;
+		}
+	}
+}
+
+$command = (isset($argv[1])) ? $argv[1] : NULL;
+
+$copia=new Backup;
+$copia->command=$argv;
+//echo $copia->title();
+//echo $copia->author();
+
+if ($command) $copia->dispatch($copia->command[1]);
+
