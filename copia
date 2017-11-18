@@ -18,8 +18,8 @@
 */
 class Backup
 {
-	private $base			=	'/home/pedro/';
-	private $target			=	'/media/pedro/Archivos/';
+	private $base			=	'/home/youruser/';
+	private $target			=	'/media/files/';
 	private $folder			=	'cseg1.1/';
 	private $fullprefix		=	'fullbackup_';
 	private $inc_prefix		=	'inc_backup_';
