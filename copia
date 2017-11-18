@@ -330,8 +330,6 @@ $command = (isset($argv[1])) ? $argv[1] : NULL;
 
 $copia=new Backup;
 $copia->command=$argv;
-//echo $copia->title();
-//echo $copia->author();
+
 
 if ($command) $copia->dispatch($copia->command[1]);
-
