@@ -1,0 +1,65 @@
+.TH Copia
+.SH NOMBRE
+Copia es un script PHP para bash capaz de ejecutar copias full e incrementales. Copia está instalado en /home/pedro/.bin
+.SH SINOPSIS
+.B copia  
+environment
+.br
+.B copia
+full
+.br
+.B copia 
+incremental
+.br
+.B copia 
+restore
+.br
+.B copia 
+history
+.br
+.B copia
+help
+.br
+.B copia 
+usage
+.br
+.br
+.B man
+copia
+.SH DESCRIPCIÓN
+Copia crea backups "full" e "incrementales" basando el contenido de los archivos en el archivo backup.snap.
+.SH CONFIGURATION
+Para configurar los nombres de los directorios y los archivos, edita con tu forma y programa preferido el archivo copia y en las primeras lineas de la clase podrás cambiarlo hasta satisfacer tus necesidades.
+.PP
+El archivo err.log almacena tanto el historial como la salida del comando tar.
+.PP
+copia environment, analiza los directorios tanto fuente como objeto.
+.PP
+copia full, crea una copia full en el directorio definido.
+.PP
+copia incremental, crea una copia incremental.
+.PP
+copia restore, restaura la totalidad de las copias acumuladas.
+-PP
+copia history, añade la linea de history y muestra la historia.
+.PP
+copia help, para ver el help,
+.PP
+copia usage, para ver sinónimos de órdenes.
+.SH ARCHIVOS
+/usr/bin/php
+.br
+/bin/tar
+.br
+/usr/gzip
+.br
+/usr/bin/env
+.br
+.SH AUTOR
+Pedro Ruiz Hidalgo
+.br
+(c) MIT license
+.br
+@pedroruizhidalg
+
+
