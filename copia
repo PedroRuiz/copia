@@ -18,8 +18,8 @@
 */
 class Backup
 {
-	private $base			=	'/home/youruser/';
-	private $target			=	'/media/files/';
+	private $base			=	'/home/pedro/';
+	private $target			=	'/media/pedro/Archivos/';
 	private $folder			=	'cseg1.1/';
 	private $fullprefix		=	'fullbackup_';
 	private $inc_prefix		=	'inc_backup_';
@@ -27,6 +27,8 @@ class Backup
 	private $err_log		=	'err.log';
 
 	public $command;
+
+
 
 	function get($private_var)
 	// only read
@@ -63,7 +65,7 @@ class Backup
 
 	function title()
 	{
-		exec("clear");
+		system("clear");
 		echo "
    ____                   _         
   / ___|   ___    _ __   (_)   __ _ 
@@ -87,6 +89,8 @@ class Backup
 		echo "\ncopia restore para restaurar todo";
 		echo "\ncopia history para ver cabeceras en $ERRLOG";
 		echo "\ncopia help para ver esta ayuda";
+		echo "\ncopia usage para ver forma se sinónimos";
+		echo "\n\nman copia para ver manual de copia";
 		echo "\n";
 	}
 
@@ -99,6 +103,21 @@ class Backup
 		echo "\n".str_repeat('*', 36);
 		echo "\n".$banner.str_repeat(' ', 35-$len_banner).'*';
 		echo "\n".str_repeat('*', 36)."\n";
+	}
+
+	function usage()
+	{
+		$this->title();
+		$this->author();
+		echo "\ncopia full | copia f";
+		echo "\ncopia incremental | copia inc";
+		echo "\ncopia environment | copia env";
+		echo "\ncopia restore para restaurar todo";
+		echo "\ncopia history | copia hist";
+		echo "\ncopia help | copia h | copia -h | copia --help";
+		echo "\ncopia usage";
+		echo "\n\nman copia para ver manual de copia";
+		echo "\n";
 	}
 
 	function set_command($command)
@@ -160,9 +179,13 @@ class Backup
 				{
 					if(  ! $this->is_full_file())
 					{
+						$this->title();
+						$this->author();
+						echo 'Inicia copia full a las '.date('d-m-Y H:i:s');
 						$this->to_errlog('Copia Full');
 						exec ("tar -cpvzf $full_name -g $snap_file $base 1> /dev/null 2>>$err_log",$output,$retval);
 						$this->to_errlog('Termina full');
+						echo "\nTermina copia full a las ".date('d-m-Y H:i:s');
 					} else {					
 						exit( "ya existe un archivo fullbackup\n");
 					}
@@ -283,10 +306,14 @@ class Backup
 	{
 		switch ($command) {
 			case 'full':
+			case 'f':
 				$this->full();
 				break;
 
 			case 'history';
+			case 'hist':
+				$this->title();
+				$this->author();
 				$this->to_errlog('history');
 				exec ('echo \'>>> history <<<\''.date('%h'));
 				exec ("grep '>>>' " . $this->target.$this->folder.$this->err_log,$output,$retval);
@@ -322,13 +349,24 @@ class Backup
 				$this->help();
 				echo "\n";
 				break;
+			case 'usage':
+				$this->usage();
 		}
 	}
 }
 
 $command = (isset($argv[1])) ? $argv[1] : NULL;
 
+
 $copia=new Backup;
+
+if(is_null($command))
+{
+	$copia->title();
+	$copia->author();
+	system("echo \"\n \\033[1m copia help\\033[0m para ayuda\n\n\"");
+} 
+
 $copia->command=$argv;
 
 
