@@ -18,7 +18,7 @@
 */
 class Backup
 {
-	private $base			=	'/you/directory/to/copy';
+	private $base			=	'/your/directory/to/copy'; //tipically: /home/user
 	private $target			=	'/your/backup/directory/';
 	private $folder			=	'cseg1.1/';
 	private $fullprefix		=	'fullbackup_';
